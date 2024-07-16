@@ -11,15 +11,18 @@ import (
 
 func main() {
 	sd, err := speech.NewDetector(speech.DetectorConfig{
-		ModelPath:            "../../files/silero_vad.onnx",
+		ModelPath:            "../../src/silero_vad/data/silero_vad.onnx",
 		SampleRate:           16000,
-		WindowSize:           1536,
 		Threshold:            0.5,
-		MinSilenceDurationMs: 0,
-		SpeechPadMs:          0,
+		MinSilenceDurationMs: 100,
+		SpeechPadMs:          30,
 	})
 	if err != nil {
 		log.Fatalf("failed to create speech detector: %s", err)
+	}
+
+	if len(os.Args) != 2 {
+		log.Fatalf("invalid arguments provided: expecting one file path")
 	}
 
 	f, err := os.Open(os.Args[1])
