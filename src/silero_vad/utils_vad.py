@@ -23,7 +23,11 @@ class OnnxWrapper():
             self.session = onnxruntime.InferenceSession(path, sess_options=opts)
 
         self.reset_states()
-        self.sample_rates = [8000, 16000]
+        if '16k' in path:
+            warnings.warn('This model support only 16000 sampling rate!')
+            self.sample_rates = [16000]
+        else:
+            self.sample_rates = [8000, 16000]
 
     def _validate_input(self, x, sr: int):
         if x.dim() == 1:
@@ -304,7 +308,7 @@ def get_speech_timestamps(audio: torch.Tensor,
     current_speech = {}
 
     if neg_threshold is None:
-        neg_threshold = threshold - 0.15
+        neg_threshold = max(threshold - 0.15, 0.01)
     temp_end = 0  # to save potential segment end (and tolerate some silence)
     prev_end = next_start = 0  # to save potential segment limits in case of maximum segment size reached
 
@@ -372,9 +376,10 @@ def get_speech_timestamps(audio: torch.Tensor,
             speech['end'] = int(min(audio_length_samples, speech['end'] + speech_pad_samples))
 
     if return_seconds:
+        audio_length_seconds = audio_length_samples / sampling_rate
         for speech_dict in speeches:
-            speech_dict['start'] = round(speech_dict['start'] / sampling_rate, 1)
-            speech_dict['end'] = round(speech_dict['end'] / sampling_rate, 1)
+            speech_dict['start'] = max(round(speech_dict['start'] / sampling_rate, 1), 0)
+            speech_dict['end'] = min(round(speech_dict['end'] / sampling_rate, 1), audio_length_seconds)
     elif step > 1:
         for speech_dict in speeches:
             speech_dict['start'] *= step

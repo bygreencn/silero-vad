@@ -1,4 +1,4 @@
-[![Mailing list : test](http://img.shields.io/badge/Email-gray.svg?style=for-the-badge&logo=gmail)](mailto:hello@silero.ai) [![Mailing list : test](http://img.shields.io/badge/Telegram-blue.svg?style=for-the-badge&logo=telegram)](https://t.me/silero_speech) [![License: CC BY-NC 4.0](https://img.shields.io/badge/License-MIT-lightgrey.svg?style=for-the-badge)](https://github.com/snakers4/silero-vad/blob/master/LICENSE)
+[![Mailing list : test](http://img.shields.io/badge/Email-gray.svg?style=for-the-badge&logo=gmail)](mailto:hello@silero.ai) [![Mailing list : test](http://img.shields.io/badge/Telegram-blue.svg?style=for-the-badge&logo=telegram)](https://t.me/silero_speech) [![License: CC BY-NC 4.0](https://img.shields.io/badge/License-MIT-lightgrey.svg?style=for-the-badge)](https://github.com/snakers4/silero-vad/blob/master/LICENSE) [![downloads](https://img.shields.io/pypi/dm/silero-vad?style=for-the-badge)](https://pypi.org/project/silero-vad/)
 
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/snakers4/silero-vad/blob/master/silero-vad.ipynb)
 
@@ -22,6 +22,8 @@
 
 https://user-images.githubusercontent.com/36505480/144874384-95f80f6d-a4f1-42cc-9be7-004c891dd481.mp4
 
+Please note, that video loads only if you are logged in your GitHub account. 
+
 </details>
 
 <br/>
@@ -29,14 +31,46 @@ https://user-images.githubusercontent.com/36505480/144874384-95f80f6d-a4f1-42cc-
 <h2 align="center">Fast start</h2>
 <br/>
 
+<details>
+<summary>Dependencies</summary>
+
+  System requirements to run python examples on `x86-64` systems:
+  
+  - `python 3.8+`;
+  - 1G+ RAM;
+  - A modern CPU with AVX, AVX2, AVX-512 or AMX instruction sets.
+
+  Dependencies:
+  
+  - `torch>=1.12.0`;
+  - `torchaudio>=0.12.0` (for I/O only);
+  - `onnxruntime>=1.16.1` (for ONNX model usage).
+  
+  Silero VAD uses torchaudio library for audio I/O (`torchaudio.info`, `torchaudio.load`, and `torchaudio.save`), so a proper audio backend is required:
+  
+  - Option №1 - [**FFmpeg**](https://www.ffmpeg.org/) backend. `conda install -c conda-forge 'ffmpeg<7'`;
+  - Option №2 - [**sox_io**](https://pypi.org/project/sox/) backend. `apt-get install sox`, TorchAudio is tested on libsox 14.4.2;
+  - Option №3 - [**soundfile**](https://pypi.org/project/soundfile/) backend. `pip install soundfile`.
+
+If you are planning to run the VAD using solely the `onnx-runtime`, it will run on any other system architectures where onnx-runtume is [supported](https://onnxruntime.ai/getting-started). In this case please note that:
+
+- You will have to implement the I/O;
+- You will have to adapt the existing wrappers / examples / post-processing for your use-case.
+
+</details>
+
 **Using pip**:
 `pip install silero-vad`
 
 ```python3
 from silero_vad import load_silero_vad, read_audio, get_speech_timestamps
 model = load_silero_vad()
-wav = read_audio('path_to_audio_file') # backend (sox, soundfile, or ffmpeg) required!
-speech_timestamps = get_speech_timestamps(wav, model)
+wav = read_audio('path_to_audio_file')
+speech_timestamps = get_speech_timestamps(
+  wav,
+  model,
+  return_seconds=True,  # Return speech timestamps in seconds (default is samples)
+)
 ```
 
 **Using torch.hub**:
@@ -47,8 +81,12 @@ torch.set_num_threads(1)
 model, utils = torch.hub.load(repo_or_dir='snakers4/silero-vad', model='silero_vad')
 (get_speech_timestamps, _, read_audio, _, _) = utils
 
-wav = read_audio('path_to_audio_file') # backend (sox, soundfile, or ffmpeg) required!
-speech_timestamps = get_speech_timestamps(wav, model)
+wav = read_audio('path_to_audio_file')
+speech_timestamps = get_speech_timestamps(
+  wav,
+  model,
+  return_seconds=True,  # Return speech timestamps in seconds (default is samples)
+)
 ```
 
 <br/>
@@ -137,4 +175,4 @@ Please see our [wiki](https://github.com/snakers4/silero-models/wiki) for releva
 
 - Voice activity detection for the [browser](https://github.com/ricky0123/vad) using ONNX Runtime Web
 
-- [Rust](https://github.com/snakers4/silero-vad/tree/master/examples/rust-example), [Go](https://github.com/snakers4/silero-vad/tree/master/examples/go), [Java](https://github.com/snakers4/silero-vad/tree/master/examples/java-example) and [other](https://github.com/snakers4/silero-vad/tree/master/examples) examples
+- [Rust](https://github.com/snakers4/silero-vad/tree/master/examples/rust-example), [Go](https://github.com/snakers4/silero-vad/tree/master/examples/go), [Java](https://github.com/snakers4/silero-vad/tree/master/examples/java-example), [C++](https://github.com/snakers4/silero-vad/tree/master/examples/cpp), [C#](https://github.com/snakers4/silero-vad/tree/master/examples/csharp) and [other](https://github.com/snakers4/silero-vad/tree/master/examples) community examples
